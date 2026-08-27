@@ -1,0 +1,21 @@
+# ─────────────────────────────────────────────────────────────
+# service.yaml — Módulo 1, práctica de Kubernetes
+#
+# Los Pods son efímeros: mueren y nacen con IPs distintas.
+# Un Service da una dirección estable que reparte el tráfico
+# entre todos los Pods que coincidan con el selector.
+# ─────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: hola-devops-svc
+spec:
+  # NodePort expone el servicio fuera del clúster.
+  # En producción se usa LoadBalancer o un Ingress.
+  type: NodePort
+  selector:
+    app: hola-devops     # conecta con los Pods del Deployment
+  ports:
+    - port: 80           # puerto del Service dentro del clúster
+      targetPort: 80     # puerto del contenedor
+      nodePort: 30080    # puerto expuesto en el nodo (rango 30000-32767)
