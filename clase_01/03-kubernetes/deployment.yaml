@@ -1,0 +1,50 @@
+# ─────────────────────────────────────────────────────────────
+# deployment.yaml — Módulo 1, práctica de Kubernetes
+#
+# Un Deployment le dice a Kubernetes: "quiero N copias de este
+# contenedor corriendo siempre". Si una se cae, Kubernetes la
+# vuelve a levantar solo. Eso es orquestación.
+# ─────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hola-devops
+  labels:
+    app: hola-devops
+spec:
+  # replicas: cuántas copias (Pods) queremos corriendo.
+  replicas: 2
+
+  # selector: cómo el Deployment reconoce "sus" Pods.
+  selector:
+    matchLabels:
+      app: hola-devops
+
+  # template: el molde con el que se crea cada Pod.
+  template:
+    metadata:
+      labels:
+        app: hola-devops    # debe coincidir con el selector de arriba
+    spec:
+      containers:
+        - name: web
+          # Si cargaste tu propia imagen en Minikube:
+          #   minikube image load hola-devops:v1
+          # usá hola-devops:v1 y descomentá imagePullPolicy: Never.
+          # Si no, dejá nginx:alpine, que Kubernetes descarga solo.
+          image: nginx:alpine
+          # imagePullPolicy: Never   # ← descomentá SOLO si usás tu imagen local
+          ports:
+            - containerPort: 80
+
+          # resources: cuánto puede consumir el contenedor.
+          # Sin esto, un Pod con un bug puede comerse el nodo entero.
+          # Mi=mebibytes 1Mi = 1024*1024 bytes = 1.048.576 bytes entonces 32Mi = 32*1024*1024 bytes = 33.554.432 bytes
+          # m=millicores 1m = 0.001 cores entonces 50m = 0.05 cores osea 5% de un core
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
