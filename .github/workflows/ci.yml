@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ development ]
+  pull_request:
+
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descarga el codigo
+        uses: actions/checkout@v4
+
+      - name: Verificar estructura del proyecto
+        run: |
+          test -f clase_01/02-docker/Dockerfile || (echo "Falta el archivo Dockerfile" && exit 1)
+          test -f clase_01/02-docker/index.html || (echo "Falta clase_01/02_Docker/index.html" && exit 1)
+          echo "Estructura correcta"
+      
+      - name: Validar el HTML
+        run: |
+          if grep -q "TU NOMBRE ACÁ" clase_01/02-docker/index.html; then
+            echo "Todavía está el texto de ejemplo: poné tu nombre"
+            exit 1
+          fi
+          echo "HTML validado"
+
+      - name: Construir la imagen de Docker
+        run: docker build -t practica:ci clase_01/02-docker/
+
+      - name: Probar que el contenedor responda
+        run: |
+          docker run -d -p 8080:80 --name prueba practica:ci
+          sleep 3
+          curl -f http://localhost:8080 > /dev/null
+          echo "El conteedor responde correctamente"
+          docker stop prueba
